@@ -19,7 +19,7 @@ threshold = 1*GB
 # prints formatted time
 def printtime(c):
     days, hours, minutes, seconds = int(c.days), int(c.seconds // 3600), int(c.seconds % 3600 / 60.0), int(c.seconds % 60.0)
-    print (f"{str(days)+' days' if days != 0 else ''}{str(hours)+' hours' if hours != 0 else ''}{str(minutes)+' minutes' if minutes != 0 else ''}{seconds} seconds")
+    print (f"{str(days)+' days ' if days != 0 else ''}{str(hours)+' hours ' if hours != 0 else ''}{str(minutes)+' minutes ' if minutes != 0 else ''}{seconds} seconds")
 
 #heuristic to calculate lines needed to create file size based on file size
 def heuristic (fs, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0):
@@ -76,7 +76,7 @@ def _generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_colu
     a = dataset(x, int_columns = int_columns, str_columns = str_columns, float_columns = float_columns, bool_columns= bool_columns, word_columns = word_columns)
 
     print("Done")
-    print("Saving Data.... ")
+    print("\nSaving Data.... ")
 
     pd.DataFrame(a).to_csv(out,index=False,header=False)
 
@@ -90,8 +90,8 @@ def _generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_colu
 # merges  given csv files (must have no indexes and headers)
 def merge(csvlist,out="gen.csv"):
     from os import system
-    start =datetime.datetime.now()
-    print("Merging temp files....")
+    startm =datetime.datetime.now()
+    print("\nMerging temp files....")
 
     if rename:
         while (path.exists(out)):
@@ -100,25 +100,25 @@ def merge(csvlist,out="gen.csv"):
     for i in csvlist:
         system(f"cat {i}>>{out}")
     system (f"rm {' '.join(csvlist)}")
-    ends =datetime.datetime.now()
+    endm =datetime.datetime.now()
 
     print("Done")
-    c = ends-start
+    c = endm-startm
     printtime(c)
     
     return out
 
 # Generates dataset in chunks (_generate + merge if nedded)
 def generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0,out="gen.csv"):
-    start =datetime.datetime.now()
+    startt =datetime.datetime.now()
 
-    if ds < threshold:
+    if ds <= threshold:
         out = _generate(ds, int_columns = int_columns , str_columns = str_columns , float_columns = float_columns , bool_columns= bool_columns, word_columns = word_columns ,out= out)
     else: 
         print ("Size too big. Using Temp files.")
         files = []
         for i in range(ds//threshold):
-            print(f"\nfile {i} of {ds//threshold+1}")
+            print(f"\nfile {i+1} of {ds//threshold+1}")
             files.append(_generate(threshold, int_columns = int_columns , str_columns = str_columns , float_columns = float_columns , bool_columns= bool_columns, word_columns = word_columns ,out= f"tmp{i}.csv"))
             
         print(f"\nfile {ds//threshold+1} of {ds//threshold+1}")
@@ -127,9 +127,9 @@ def generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_colum
 
         out = merge(files,out=out)
     
-    ends =datetime.datetime.now()
+    endt =datetime.datetime.now()
     
-    c = ends-start
+    c = endt-startt
     print("\nSuccess")
     print("\nTotal Time: ",end= ' ')
     printtime(c)

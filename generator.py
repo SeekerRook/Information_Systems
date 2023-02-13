@@ -142,14 +142,13 @@ if __name__ == "__main__":
 
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
+    ap.add_argument("-fs", "--size",  required=True, help="intended dataset size")
+    ap.add_argument("-i", "--int", default=0, required=False, help="# of integer columns")
+    ap.add_argument("-f", "--float", default=0, required=False, help="# of float columns")
+    ap.add_argument("-s", "--str", default=0, required=False, help="# of string columns")
+    ap.add_argument("-b", "--bool", default=0, required=False, help="# of bool columns")
+    ap.add_argument("-w", "--word", default=0, required=False, help="# of english word columns")
     ap.add_argument("-o", "--out", required=False, help="output file name")
-    ap.add_argument("-i", "--int","--integer", default=0, required=False, help="output file name")
-    ap.add_argument("-f", "--float", default=0, required=False, help="output file name")
-    ap.add_argument("-s", "--str","--string", default=0, required=False, help="output file name")
-    ap.add_argument("-b", "--bool", default=0, required=False, help="output file name")
-    ap.add_argument("-w", "--word", default=0, required=False, help="output file name")
-    ap.add_argument("-fs", "--size", "--filesize",  required=True, help="output file name")
-    ap.add_argument("-d", "--debug", "--debugging",   help="output file name")
     
     args = vars(ap.parse_args())
 

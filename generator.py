@@ -15,41 +15,44 @@ fls = 50
 flr = 25
 threshold = 1*GB
 
+
+# prints formatted time
 def printtime(c):
     days, hours, minutes, seconds = int(c.days), int(c.seconds // 3600), int(c.seconds % 3600 / 60.0), int(c.seconds % 60.0)
     print (f"{str(days)+' days' if days != 0 else ''}{str(hours)+' hours' if hours != 0 else ''}{str(minutes)+' minutes' if minutes != 0 else ''}{seconds} seconds")
 
-def heuristic (gb, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0):
-    # ys = int_columns+ str_columns*strsize + word_columns*10 + bool_columns + float_columns
+#heuristic to calculate lines needed to create file size based on file size
+def heuristic (fs, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0):
     columns = int_columns+ str_columns + word_columns + bool_columns + float_columns
     y =  2*int_columns + str_columns*strsize + word_columns*6 + bool_columns + float_columns*16 + columns # +1 from \n cancels with -1 from one less comma
 
-    return gb//y 
+    return fs//y 
 
-
+#creates dataset of given rows and types using numpy random generators
 def dataset(rows, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0):
     import numpy as np
     a = []
     rng =   rng = np.random.default_rng()
 
-    if int_columns >0 :
-    
+    if int_columns >0 :#integers
         a.append(rng.integers(low=10,high=1000,size = (rows,int_columns)).T.astype(object))
-    if bool_columns >0 :
+
+    if bool_columns >0 : #booleans
         a.append(rng.integers(low=0,high=2,size = (rows,bool_columns)).T.astype(object))
 
 
-    if float_columns >0 :
+    if float_columns >0 : #float
         center = np.random.randint(-1*fls,fls)
         a.append(rng.uniform(center-flr,center+flr,size = (rows,float_columns)).T.astype(object))
 
-    if str_columns >0 :
+    if str_columns >0 : #strings
         alphabet = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
         np_alphabet = np.array(alphabet)
         np_codes = np.random.choice(np_alphabet, [str_columns*rows, strsize])
         codes = ["".join(np_codes[i]) for i in range(len(np_codes))]
         a.append(np.array(codes).reshape(rows,str_columns).T.astype(object))
-    if word_columns >0 :
+
+    if word_columns >0 : # english words
         import json
         alphabet = json.load(open("wordlist.json"))
         np_alphabet = np.array(alphabet)
@@ -59,41 +62,32 @@ def dataset(rows, int_columns = 0, str_columns = 0, float_columns = 0, bool_colu
 
     return np.concatenate(a).T
 
+# Generates dataset chunk from file size and saves to csv
 def _generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0,out="gen.csv"):
+    
     if rename:
         while (path.exists(out)):
                 out = out.replace('.','_new.')
 
-
-    # columns = int_columns + float_columns + bool_columns + str_columns + word_columns
     x = heuristic(ds,int_columns , str_columns , float_columns , bool_columns, word_columns )
-    
     
     start =datetime.datetime.now()
     print("Generating Data....")
     a = dataset(x, int_columns = int_columns, str_columns = str_columns, float_columns = float_columns, bool_columns= bool_columns, word_columns = word_columns)
 
     print("Done")
-
-
     print("Saving Data.... ")
 
     pd.DataFrame(a).to_csv(out,index=False,header=False)
 
-
-
     ends =datetime.datetime.now()
     print("Done")
-
-
-
 
     c = ends-start
     printtime(c)
     return out
 
-
-
+# merges  given csv files (must have no indexes and headers)
 def merge(csvlist,out="gen.csv"):
     from os import system
     start =datetime.datetime.now()
@@ -114,7 +108,7 @@ def merge(csvlist,out="gen.csv"):
     
     return out
 
-
+# Generates dataset in chunks (_generate + merge if nedded)
 def generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0,out="gen.csv"):
     start =datetime.datetime.now()
 
@@ -137,13 +131,11 @@ def generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_colum
     
     c = ends-start
     print("\nSuccess")
-    print("\n\nTotal Time: ",end= ' ')
+    print("\nTotal Time: ",end= ' ')
     printtime(c)
     return out
     
-# merge(['gen12.csv','gen3.csv','gen3.csv'])
 
-#autosplitter
 
 if __name__ == "__main__":
     import argparse
@@ -163,13 +155,14 @@ if __name__ == "__main__":
 
     size =  int(''.join(x for x in args['size'] if x.isdigit()))
 
+    # if name is given will not keep existing file
     if args['out'] is None:
         out = 'gen.csv'
     else:
         out = args['out']
         rename = False
     
-    
+    # get unit from args
     units = args['size'].replace(f'{size}','')
     if (units == ""):
         unit = B   
@@ -186,21 +179,24 @@ if __name__ == "__main__":
     else:
         print(f"ERROR : Unknown size format '{units}'")
         exit(1)
+
+    #convert string arguments to int     
     for i in args:
         try:
             args[i] = int(args[i])
         except:
             pass
+    
+    # if empty create integer with one column
     if ((args['word'] + args['str'] + args['bool'] + args['float'] + args['int'] )== 0):
         args["int"] = 1
 
-    print (f" \n DATASET FOMAT : {size}{units} * [|{'int|'*args['int']}{'bool|'*args['bool']}{'float|'*args['float']}{'str|'*args['str']}{'word|'*args['word']}]\n")
 
-    # generate(500*MB,int_columns= 1,float_columns=2,bool_columns=2,str_columns=1,word_columns=1)
-    print ("\n")
+    print (f" \n DATASET FOMAT : {size}{units} * [|{'int|'*args['int']}{'bool|'*args['bool']}{'float|'*args['float']}{'str|'*args['str']}{'word|'*args['word']}]\n")
 
     out = generate(size*unit,int_columns=args['int'],float_columns=args['float'],bool_columns=args['bool'],str_columns=args['str'],word_columns=args['word'],out = out)
 
-    print("\n\nResult:  ")
+    print("\n\nResult:  ", end = ' ')
+    #get size
     system(f"ls -lh {out} "+"| awk '{print $9 , $5}'")
     print("")

@@ -97,9 +97,11 @@ def merge(csvlist,out="gen.csv"):
         while (path.exists(out)):
             out = out.replace('.','_new.')
     else : system(f" echo > {out}")
-    for i in csvlist:
+    for idx,i in enumerate(csvlist):
+        print(f"{100*idx//len(csvlist)}%",end='\r')
         system(f"cat {i}>>{out}")
-    system (f"rm {' '.join(csvlist)}")
+        system(f"rm {i}")
+        
     endm =datetime.datetime.now()
 
     print("Done")

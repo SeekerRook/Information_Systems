@@ -71,27 +71,27 @@ def _generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_colu
 
     x = heuristic(ds,int_columns , str_columns , float_columns , bool_columns, word_columns )
     
-    start =datetime.datetime.now()
-    print("Generating Data....")
+    # start =datetime.datetime.now()
+    print("Generating Data....                              ",end = '\r')
     a = dataset(x, int_columns = int_columns, str_columns = str_columns, float_columns = float_columns, bool_columns= bool_columns, word_columns = word_columns)
 
-    print("Done")
-    print("\nSaving Data.... ")
+    # print("Done")
+    print("Saving Data....                               ",end = '\r')
 
     pd.DataFrame(a).to_csv(out,index=False,header=False)
 
-    ends =datetime.datetime.now()
-    print("Done")
+    # ends =datetime.datetime.now()
+    # print("Done")
 
-    c = ends-start
-    printtime(c)
+    # c = ends-start
+    # printtime(c)
     return out
 
 # merges  given csv files (must have no indexes and headers)
 def merge(csvlist,out="gen.csv"):
-    from os import system
+    # from os import system
     startm =datetime.datetime.now()
-    print("\nMerging temp files....")
+    print("Merging temp files....                              ", end = '\r')
 
     if rename:
         while (path.exists(out)):
@@ -104,16 +104,16 @@ def merge(csvlist,out="gen.csv"):
         
     endm =datetime.datetime.now()
 
-    print("Done")
-    c = endm-startm
-    printtime(c)
+    # print("Done")
+    # c = endm-startm
+    # printtime(c)
     
     return out
 
 # Generates dataset in chunks (_generate + merge if nedded)
 def generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_columns= 0, word_columns = 0,out="gen.csv"):
     startt =datetime.datetime.now()
-
+    # print 
     if ds <= threshold:
         out = _generate(ds, int_columns = int_columns , str_columns = str_columns , float_columns = float_columns , bool_columns= bool_columns, word_columns = word_columns ,out= out)
     else: 
@@ -132,28 +132,27 @@ def generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_colum
     endt =datetime.datetime.now()
     
     c = endt-startt
-    print("\nSuccess")
-    print("\nTotal Time: ",end= ' ')
+    print("Success")
+    print("Total Time: ",end= ' ')
     printtime(c)
     return out
+
+def mainjs(file):
+    import json
+    data = json.load(open(file))
+
+    for idx,args in enumerate(data):
+
+        print(f"______ DATASET  {idx+1}/{len(data)} : {args['out']} ______")
+        for i in ["int","word","str","bool","float"]:
+            if i not in args:
+                args[i] = 0
+        
+        main(args)
     
 
-
-if __name__ == "__main__":
-    import argparse
-
-    # construct the argument parse and parse the arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-fs", "--size",  required=True, help="intended dataset size")
-    ap.add_argument("-i", "--int", default=0, required=False, help="# of integer columns")
-    ap.add_argument("-f", "--float", default=0, required=False, help="# of float columns")
-    ap.add_argument("-s", "--str", default=0, required=False, help="# of string columns")
-    ap.add_argument("-b", "--bool", default=0, required=False, help="# of bool columns")
-    ap.add_argument("-w", "--word", default=0, required=False, help="# of english word columns")
-    ap.add_argument("-o", "--out", required=False, help="output file name")
-    
-    args = vars(ap.parse_args())
-
+def main(args)   :
+    global rename
     size =  int(''.join(x for x in args['size'] if x.isdigit()))
 
     # if name is given will not keep existing file
@@ -201,3 +200,24 @@ if __name__ == "__main__":
     #get size
     system(f"ls -lh {out} "+"| awk '{print $9 , $5}'")
     print("")
+
+
+if __name__ == "__main__":
+    import argparse
+
+    # construct the argument parse and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-j","--json",required=False, help="get from json file") 
+    ap.add_argument("-fs", "--size",  required=False, help="dataset size")
+    ap.add_argument("-i", "--int", default=0, required=False, help="# of integer columns")
+    ap.add_argument("-f", "--float", default=0, required=False, help="# of float columns")
+    ap.add_argument("-s", "--str", default=0, required=False, help="# of string columns")
+    ap.add_argument("-b", "--bool", default=0, required=False, help="# of bool columns")
+    ap.add_argument("-w", "--word", default=0, required=False, help="# of english word columns")
+    ap.add_argument("-o", "--out", required=False, help="output file name")
+    
+    args = vars(ap.parse_args())
+    print(args)
+    if args['json'] is None :
+        main(args)
+    else: mainjs(args["json"])

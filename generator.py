@@ -128,7 +128,22 @@ def generate(ds, int_columns = 0, str_columns = 0, float_columns = 0, bool_colum
         files.append(_generate(ds%threshold, int_columns = int_columns , str_columns = str_columns , float_columns = float_columns , bool_columns= bool_columns, word_columns = word_columns ,out= f"tmp.csv"))
 
         out = merge(files,out=out)
-    
+    headers = ""
+    for i in range(int_columns):
+        headers += f"int{i},"
+    for i in range(bool_columns):
+        headers += f"bool{i},"
+    for i in range(float_columns):
+        headers += f"float{i},"
+    for i in range(str_columns):
+        headers += f"str{i},"
+    for i in range(word_columns):
+        headers += f"word{i},"
+    headers = headers[:-1]
+    system(f"cat {out}>>_{out}")
+    system(f"echo {headers}>{out}")
+    system(f"cat _{out}>>{out}")
+    system(f"rm _{out}")
     endt =datetime.datetime.now()
     
     c = endt-startt
@@ -194,6 +209,7 @@ def main(args)   :
 
     print (f" \n DATASET FOMAT : {size}{units} * [|{'int|'*args['int']}{'bool|'*args['bool']}{'float|'*args['float']}{'str|'*args['str']}{'word|'*args['word']}]\n")
 
+  
     out = generate(size*unit,int_columns=args['int'],float_columns=args['float'],bool_columns=args['bool'],str_columns=args['str'],word_columns=args['word'],out = out)
 
     print("\n\nResult:  ", end = ' ')

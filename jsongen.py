@@ -10,24 +10,24 @@ col_range_min  = 4
 
 ds_types = {
 "huge" : {
-    "probability":0.1,
-    "multiplier":10,
+    "probability":0.0,
+    "multiplier":1,
     "unit":"GB"
     },
 "small" : {
-    "probability":0.1,
-    "multiplier":10,
+    "probability":0.3,
+    "multiplier":1,
     "unit":"MB",
     },
 "medium" : {
-    "probability":0.4,
-    "multiplier":100,
+    "probability":0.5,
+    "multiplier":10,
     "unit":"MB"
     },
 "big" : {
-    "probability":0.4,
-    "multiplier":1,
-    "unit":"GB"
+    "probability":0.2,
+    "multiplier":100,
+    "unit":"MB"
     },
     
 }
@@ -35,7 +35,7 @@ ds_types = {
 column_types = {
 "int" : 1.5,
 "float" : 1,
-"str" : 0.5,
+
 "word" : 0.2,
 "bool" : 1.2,
 "uniform" : 0.5
@@ -67,7 +67,12 @@ def getcols():
     res = {}
     for i in set(columns):
         res[i] = columns.count(i)
-    return res    
+        try:
+            res["bool"]+=1
+        except: 
+            res["bool"]=1
+
+    return res  
 
 # print(getcols())
 def make(N,out):
